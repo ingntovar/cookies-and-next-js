@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
+import { GetServerSideProps } from "next";
 
 import Layout from "../components/layouts/Layout"
 
@@ -9,12 +10,22 @@ import FormLabel from "@mui/material/FormLabel"
 import RadioGroup from "@mui/material/RadioGroup"
 import FormControlLabel from "@mui/material/FormControlLabel"
 import Radio from "@mui/material/Radio";
+import Button from "@mui/material/Button";
+
 import Cookies  from "js-cookie";
+import axios from "axios";
+
+interface Props {
+  theme: string
+}
 
 
-const ThemeChangerPage = () => {
+const ThemeChangerPage: FC<Props> = ( { theme } ) => {
 
-  const [currentTheme, setCurrentTheme] = useState('light')
+  console.log(theme);
+  
+
+  const [currentTheme, setCurrentTheme] = useState(theme)
 
   const onThemeChange = ( e : ChangeEvent<HTMLInputElement> ) => {
 
@@ -23,13 +34,23 @@ const ThemeChangerPage = () => {
 
     localStorage.setItem('theme', selectedTheme)
     Cookies.set('theme', selectedTheme)
+    setTimeout(() => {
+      location.reload()
+    }, 300);
+  }
+
+  const handleClick = async () => {
+    const {data} = await axios.get('/api/hello')
+    console.log(data)
+    
   }
 
   useEffect(() => {
-    
     console.log(localStorage.getItem('theme'));
+    console.log( 'Cookies: ', Cookies.get('theme') );
     
-    
+
+
   }, [])
   
 
@@ -61,10 +82,35 @@ const ThemeChangerPage = () => {
               />
             </RadioGroup>
           </FormControl>
+
+          <Button
+            onClick={handleClick}
+          >
+            Request
+          </Button>
+
         </CardContent>
       </Card>
     </Layout>
   )
+}
+
+
+export const getServerSideProps: GetServerSideProps = async({ req }) => {
+
+  const { theme = 'light' , name = 'noname' } = req.cookies
+  
+  const validThemes = ['light', 'dark', 'custom']
+  const theTheme = validThemes.includes( theme ) ? theme : 'dark'
+
+  
+
+  return {
+    props: {
+      theme : theTheme,
+      name
+    }
+  }
 }
 
 export default ThemeChangerPage
