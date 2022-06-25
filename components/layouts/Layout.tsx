@@ -10,9 +10,6 @@ type layoutProps = {
 const Layout = ({children}: layoutProps) => {
   return (
     <>
-      <Head>
-
-      </Head>
       <nav>
         <Navbar/>
       </nav>
